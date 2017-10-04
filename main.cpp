@@ -2,6 +2,13 @@
 
 using namespace std;
 
+void square();
+
 int main(){
-  return 0;
+	square();
+	return 0;
+}
+
+void square() {
+	cout << "BUT RICO I DON'T KNOW HOW TO USE GIT!!!\n";
 }
