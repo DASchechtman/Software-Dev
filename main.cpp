@@ -2,13 +2,17 @@
 
 using namespace std;
 
-void square();
+void power(int base, int exponent);
 
 int main(){
-	square();
+	power(2, 2);
 	return 0;
 }
 
-void square() {
-	cout << "BUT RICO I DON'T KNOW HOW TO USE GIT!!!\n";
+void power(int base, int exponent) {
+	int base_copy = 1;
+	for (int i = 0; i < exponent; i++) {
+		base_copy *= base;
+	}
+	cout << base_copy << '\n';
 }
