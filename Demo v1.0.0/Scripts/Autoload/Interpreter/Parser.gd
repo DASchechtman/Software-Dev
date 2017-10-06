@@ -98,5 +98,4 @@ func _convertToHex(var tokList):
 			#to the correct element in hex's internal dictionary
 			#and stores the key passed in to that dictionary
 			hex.set(token.getName(), token.getVal())
-	hex.printAll()
 	return hex
