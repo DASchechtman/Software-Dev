@@ -1,4 +1,4 @@
-extends Node
+extends Reference
 
 # the language of the game will have a very strict structure to it
 # so I thought it be most effiecent if each keyword in the language
@@ -21,7 +21,7 @@ func _init(var name):
 	
 	# this will determine what type of effects this spell can have
 	# each element has it's own unique behaviors that can be utilized
-	castParams.Element = null
+	castParams.Element = 'Fire'
 	
 	# determines how long (in seconds) the spell will last
 	# Will be given a defualt value, if the player doesn't specify
@@ -31,7 +31,7 @@ func _init(var name):
 	# the higher this value, the more effective the spells
 	# behavior will be, but will cost more mana
 	# will be given a defualt value if not specified
-	castParams.Power = 1
+	castParams.Power = 1.0
 	
 	# this will determine the specific behavior the spell will be able
 	# to perform
@@ -39,7 +39,7 @@ func _init(var name):
 	
 	# will determine how far away from the caster the spell will take place
 	# will be given a defualt value if not specified
-	castParams.Distance = 1
+	castParams.Distance = 1.0
 	
 	# this is the list of spells that will be cast
 	# this list will contain the original spell as well
@@ -50,9 +50,9 @@ func add(var key, var value):
 	# makes sure no new fields in the hex object
 	# is added in case when this method is called
 	if castParams.has(key):
-		if typeof(castParams[key]) == typeof([]):
+		if typeof(castParams[key]) == typeof([]) and value != null:
 			castParams[key].push_back(value)
-		else:
+		elif typeof(castParams[key]) != typeof([]):
 			castParams[key] = value
 		
 
@@ -81,6 +81,7 @@ func set(var key, var keyType):
 		add(key, null)
 		curKey = key
 	buffer = keyType
+
 func printAll():
 	for el in castParams:
 		print(el, ' : ', castParams[el])
@@ -109,3 +110,9 @@ func Cast():
 	
 func Name():
 	return spellName
+
+func Start():
+	return castParams.start
+
+func End():
+	return castParams.end

@@ -1,49 +1,37 @@
-extends Node
+extends Reference
 
+# allows me to make new tokens and hex objects
 const TOKEN = preload("Token.gd")
-const HEX = preload("Hex.gd")
+const HEX = preload("Hex/Hex.gd")
 
-class RefType:
-	
-	var data
-	
-	func _init(var data):
-		self.data = data
-	
-	func get():
-		return data
-	
-	func set(var newData):
-		data = newData
-
-var keywords
+# used to make a list of tokens
+# it made more sense to find all the
+# tokens in each line and seperate them
+# according to the line they where
+# created from
 var listToks
 var spellName
+const referance = preload("res://Scripts/ReferanceVars/RefVar.gd")
 
 
 func _init():
-	var key = "Keyword"
-	
-	keywords = {} 
-	DataShare.get("Keyword")
-	
 	listToks = []
-	
-	
-func compile(var file, var spellList):
-	
+
+func compile(var file):
+	var spellList = []
 	# will get each line from the hex file, and
 	# and processes it into it's individual tokens
 	for line in file.read():
-		print(line)
 		# keeps track of the index of the line
 		# being processed. This allows for me to
 		# know when the end of the line has been 
 		# reached
-		var ref = RefType.new(0)
+		var ref = referance.new(0)
 		
 		var tokList = []
 		var buffer = ""
+		
+		# keep going til the end of the line
 		while ref.get() < line.length():
 			
 			var tokenName = _findName(line, ref)
@@ -59,6 +47,7 @@ func compile(var file, var spellList):
 				tokList.push_back(TOKEN.new(num, "Number"))
 			elif !tokenName.empty():
 				tokList.push_back(TOKEN.new(tokenName, "Spell"))
+				
 			if tokList.size() > 0:
 				if (buffer == 'Cast' and tokList[tokList.size()-1].getVal() != 'Spell') or buffer.empty():
 					buffer = tokList[tokList.size()-1].getName()
@@ -90,6 +79,9 @@ func _convertToHex(var tokList):
 	for tokens in tokList:
 		var isList = false
 		for token in tokens:
+			var token_value = token.getName()
+			if token.getVal() == "Number":
+				token_value = float(token_value)
 			#set(var key) has the ability to save a key
 			#passed in. The end result is that the first time
 			#set(var key) is called it saves the key
@@ -97,5 +89,5 @@ func _convertToHex(var tokList):
 			#is called it uses that stored key to get access
 			#to the correct element in hex's internal dictionary
 			#and stores the key passed in to that dictionary
-			hex.set(token.getName(), token.getVal())
+			hex.set(token_value, token.getVal())
 	return hex

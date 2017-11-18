@@ -5,7 +5,6 @@ func _ready():
 
 
 func _on_Ok_pressed():
-	
 	var saveFile = FileLoader.new("user://saveFiles.txt")
 	
 	var fileName = get_text()

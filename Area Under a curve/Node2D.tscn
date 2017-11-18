@@ -1,0 +1,23 @@
+[gd_scene load_steps=2 format=1]
+
+[ext_resource path="res://main.gd" type="Script" id=1]
+
+[node name="Node2D" type="Node2D"]
+
+[node name="RichTextLabel" type="RichTextLabel" parent="."]
+
+focus/ignore_mouse = false
+focus/stop_mouse = true
+size_flags/horizontal = 2
+size_flags/vertical = 2
+margin/left = 191.0
+margin/top = 171.0
+margin/right = 686.0
+margin/bottom = 272.0
+bbcode/enabled = false
+bbcode/bbcode = "hello world"
+visible_characters = -1
+percent_visible = 1.0
+script/script = ExtResource( 1 )
+
+

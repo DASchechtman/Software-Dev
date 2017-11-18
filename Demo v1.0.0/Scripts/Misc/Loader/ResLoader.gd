@@ -21,7 +21,6 @@ func _ready():
 		var temp_name = name
 		if hexFile.getName().find('_') > -1:
 			temp_name = name.substr(0, name.length()-1)
-		print(name, ' : ', temp_name)
 		DataShare.get("FileList").push_back(hexFile)
 		DataShare.get("CastList")[hexFile.getName()] = hexFile
 	
