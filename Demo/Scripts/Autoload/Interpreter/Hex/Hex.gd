@@ -8,8 +8,12 @@ var castParams = {}
 var curKey = null
 var spellName
 var buffer = ""
+var hex = null
+var inc_list = null
+var Inc_list = preload("res://Scripts/Autoload/Interpreter/Hex/IncreamentList.gd")
 
-func _init(var name):
+
+func _init(var name = "", var push = true):
 	
 	spellName = name
 	
@@ -21,7 +25,7 @@ func _init(var name):
 	
 	# this will determine what type of effects this spell can have
 	# each element has it's own unique behaviors that can be utilized
-	castParams.Element = 'Fire'
+	castParams.Element = 'None'
 	
 	# determines how long (in seconds) the spell will last
 	# Will be given a defualt value, if the player doesn't specify
@@ -46,6 +50,37 @@ func _init(var name):
 	# as any other spell the user has created and specified
 	castParams.Cast = []
 	
+	castParams.If = []
+	castParams.test = []
+	
+	if push:
+		Stack.push(self)
+
+func _createIf(var compiled_if):
+	var PATH = "res://Scripts/Autoload/Interpreter/If Statements/"
+	var if_types = {
+		mana = {
+			'less than': PATH + "IfManaLessThen.gd",
+			'greater than': PATH + "IfManaGreaterThen.gd"
+		},
+		hp = {
+		}
+	}
+	var type = null
+	var action = null
+	if compiled_if.getType() != null:
+		type = compiled_if.getType()
+	if compiled_if.getAction() != null:
+		action = compiled_if.getAction()
+		
+	var made_if = null
+	if type != null and action != null and compiled_if.getData() != null:
+		var hex = get_script()
+		made_if = load(if_types[type][action]).new(compiled_if.getData(), hex.new())
+
+	return made_if
+
+
 func add(var key, var value):
 	# makes sure no new fields in the hex object
 	# is added in case when this method is called
@@ -68,23 +103,34 @@ func set(var key, var keyType):
 	passed in is the value to be stored into the key that was
 	passed in last time.
 	"""
+	
+	hex = Stack.get()
+	
+	if typeof(key) != typeof(0) and typeof(key) != typeof(0.0) and key == 'if':
+		var if_condition = _createIf(keyType)
+		if if_condition != null and hex == self:
+			castParams.If.push_back(Inc_list.new())
+			castParams.If[castParams.If.size()-1].add(if_condition)
+		elif if_condition != null:
+			castParams.If[castParams.If.size()-1].add(if_condition)
+		Stack.get().add("start", "point")
+		return
+		
 	if keyType == "Spell":
-		add(curKey, key)
+		hex.add(curKey, key)
 	elif curKey != null and castParams.has(curKey):
-		if buffer != 'Spell':
-			add(curKey, key)
+		if buffer != "Spell":
+			if curKey == "end" and key == "point":
+				Stack.pop()
+			hex.add(curKey, key)
 			curKey = null
 		else:
-			add(key, null)
+			hex.add(key, null)
 			curKey = key
 	else:
-		add(key, null)
+		hex.add(key, null)
 		curKey = key
 	buffer = keyType
-
-func printAll():
-	for el in castParams:
-		print(el, ' : ', castParams[el])
 
 #below are getter functions
 func curKey():
@@ -116,3 +162,6 @@ func Start():
 
 func End():
 	return castParams.end
+
+func Ifs():
+	return castParams.If

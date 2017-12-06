@@ -173,6 +173,22 @@ radial_fill/fill_degrees = 360.0
 radial_fill/center_offset = Vector2( 0, 0 )
 script/script = ExtResource( 8 )
 
+[node name="stop" type="Button" parent="Character/Sprite"]
+
+focus/ignore_mouse = false
+focus/stop_mouse = true
+size_flags/horizontal = 2
+size_flags/vertical = 2
+margin/left = 197.0
+margin/top = 266.0
+margin/right = 272.0
+margin/bottom = 292.0
+toggle_mode = false
+enabled_focus_mode = 2
+shortcut = null
+text = "stop spell"
+flat = false
+
 [node name="Earth" type="Sprite" parent="."]
 
 transform/pos = Vector2( 453.708, 188.436 )
@@ -190,5 +206,7 @@ script/script = ExtResource( 11 )
 [connection signal="pressed" from="Character/Sprite/CreateScript/EnterScript/Ok" to="Character/Sprite/CreateScript/EnterScript" method="_on_Ok_pressed"]
 
 [connection signal="pressed" from="Character/Sprite/CreateScript/EnterScript/Cancel" to="Character/Sprite/CreateScript/EnterScript" method="_on_Cancel_pressed"]
+
+[connection signal="pressed" from="Character/Sprite/stop" to="Character" method="_on_stop_pressed"]
 
 

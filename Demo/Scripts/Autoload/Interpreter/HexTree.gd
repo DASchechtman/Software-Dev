@@ -12,11 +12,15 @@ const node = preload("HexNode.gd")
 class HexTree extends Reference:
 	var root
 	var tree
-	var ref = preload("res://Scripts/ReferanceVars/RefVar.gd").new(0)
+	var ref = load("res://Scripts/ReferanceVars/RefVar.gd").new(0)
 	const node = preload("HexNode.gd")
 	var damage = 0.0
+	var additional_damage = load("res://Scripts/ReferanceVars/RefVar.gd").new(0.0)
 	var node_tbl = {}
+	var if_node_tbl = []
 	var root_name
+	var cast_x = 0
+	var cast_y = 0
 	
 	func _init(var hex = null, var name = null, var parser = null, var game_tree = null):
 		if game_tree != null:
@@ -24,11 +28,18 @@ class HexTree extends Reference:
 			
 		if hex != null and parser != null and tree != null:
 			root_name = name
+			print("working")
 			if name == null:
 				root_name = "Root"
 			damage = hex.Power()
 			root = node.new(hex, name, tree, ref)
+			if hex.Ifs().size() > 0:
+				if_node_tbl.push_back(root_name)
 			_createChildren(root, parser, ref)
+	
+	func eval(var caster):
+		for spell in if_node_tbl:
+			getNode(spell).eval(cast_x, cast_y, caster, additional_damage)
 	
 	func getNode(var key):
 		var node = root
@@ -61,7 +72,12 @@ class HexTree extends Reference:
 					if path != null:
 						for node in path:
 							node_tbl[spell].push_back(node)
-					damage += childHex.Power()
+					if childHex.Element() != "None":
+						damage += childHex.Power()
+					
+					if childHex.Ifs().size() > 0:
+						if_node_tbl.push_back(spell)
+					
 					new_node.addChildName(node.new(childHex, spell, tree, ref))
 					node_tbl[spell].push_back(new_node.getChildList().size()-1)
 					var child_list = new_node.getChildList()
@@ -88,7 +104,8 @@ class HexTree extends Reference:
 	
 	func _setNodesHelper(var new_root, var old_root):
 		for child in old_root.getChildList():
-			damage += new_root.getHex().Power()
+			if new_root.getHex().Element() != "None":
+				damage += new_root.getHex().Power()
 			var name = child.getNodeName()
 			new_root.addChildName(node.new(child.getHex(), name, tree, ref))
 			var size = new_root.getChildList().size()
@@ -97,13 +114,18 @@ class HexTree extends Reference:
 	func _setNodes(var old_root, var name, var game_tree):
 		tree = game_tree
 		root_name = name
+		var hex = old_root.getRoot().getHex()
 		root = node.new(old_root.getRoot().getHex(), name, tree, ref)
-		damage += old_root.getRoot().getHex().Power()
+		damage = old_root.getRoot().getHex().Power()
 		_setNodesHelper(root, old_root.getRoot())
-		for spell in old_root.getNodeTable():
+		var tbl = old_root.getNodeTable()
+		for spell in tbl:
 			node_tbl[spell] = []
-			for index in old_root.getNodeTable()[spell]:
-				node_tbl[spell].push_back(index)
+			for index in tbl[spell]:
+				node_tbl[spell].push_back(index) 
+		
+		for spell_name in old_root.getIfNodeTable():
+			if_node_tbl.push_back(spell_name)
 	
 	func stop():
 		_stop_helper(root)
@@ -111,13 +133,18 @@ class HexTree extends Reference:
 	func getNodeTable():
 		return node_tbl
 	
+	func getIfNodeTable():
+		return if_node_tbl
+	
 	func _stop_helper(var root):
 		for node in root.getChildList():
 			_stop_helper(node)
 		root.stop()
 	
 	func getDamage():
-		return float(damage)
+		var total_damage = damage + additional_damage.get()
+		additional_damage.set(0.0)
+		return float(total_damage)
 	
 	func isActive():
 		return ref.get() != 0
@@ -135,6 +162,8 @@ class HexTree extends Reference:
 		return ref
 		
 	func updatePos(var x, var y):
+		cast_x = x
+		cast_y = y
 		_updatePos_helper(root, x, y)
 	
 	func _updatePos_helper(var node, var x, var y):
@@ -142,13 +171,18 @@ class HexTree extends Reference:
 			_updatePos_helper(spell, x, y)
 		node.updatePos(x, y)
 			
-	func cast(var x, var y):
-		_cast_helper(root, root.getChildList(), x, y)
+	func cast(var x = null, var y = null):
+		if x != null and y != null:
+			cast_x = x
+			cast_y = y
+			_cast_helper(root, root.getChildList(), cast_x, cast_y)
+		else:
+			_cast_helper(root, root.getChildList(), cast_x, cast_y)
 	
 	func _cast_helper(var spell, var castList, var x, var y):
+		spell.cast(x, y)
 		for spell_to_cast in castList:
 			_cast_helper(spell_to_cast, spell_to_cast.getChildList(), x, y)
-		spell.cast(x, y)
 	
 static func new(var hex = null, var name = null, var parser = null, var tree = null):
 	return HexTree.new(hex, name, parser, tree)

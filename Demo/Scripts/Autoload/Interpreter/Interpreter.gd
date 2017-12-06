@@ -12,7 +12,7 @@ var gameObjects = {}
 # being cast
 var spellCasts = []
 
-var first_run
+var first_run = null
 
 # this method will be used to moderate how the spell affects the
 # game world.
@@ -25,26 +25,28 @@ func updateSpells():
 	var offset = 0
 	
 	# keeps the loop the same size 
-	var size = spellCasts.size()
+	var remove = []
 	
 	
-	for i in range(size):
+	for i in spellCasts:
 		
 		# makes it easier to access the data in
 		# each element of spellCast
-		var cast_spell = spellCasts[i-offset][0][1]
-		var caster_sprite = spellCasts[i-offset][0][0]
-		var enemy_sprite = spellCasts[i-offset][1][0]
+		var cast_spell = i[0][1]
+		var caster_sprite = i[0][0]
+		var enemy_sprite = i[1][0]
 	
-		if (caster_sprite != null and enemy_sprite != null and cast_spell != null 
-		and cast_spell.isActive()):
+		if cast_spell.isActive():
+			
+			cast_spell.eval(caster_sprite)
 			
 			# there were problems with enemies dying when they
 			# were supposed to die when this was its own 
 			# if condition, so I decided to place this if condidtion here
 			if caster_sprite.get_mana() <= 0:
-				offset = _deactivate_spell(i, offset, spellCasts, caster_sprite)
+				remove.push_back(i)
 				cast_spell.stop()
+				caster_sprite.stop_using_mana()
 			
 			
 			# gets the position of the enemy so the spell
@@ -88,8 +90,12 @@ func updateSpells():
 				# stops the spell from running as soon as the enemy dies
 				cast_spell.stop()
 				caster_sprite.stop_using_mana()
-		elif cast_spell == null or !cast_spell.isActive():
-			offset = _deactivate_spell(i, offset, spellCasts, caster_sprite)
+		elif !cast_spell.isActive():
+			remove.push_back(i)
+			caster_sprite.stop_using_mana()
+			
+		for i in remove:
+			spellCasts.erase(i)
 		first_run = false
 
 # removes the local reference of the data needed to determine how a spell
@@ -127,12 +133,15 @@ func cast(var enemy):
 	else:
 		var cloned_player = [gameObjects["Player"][0], spell_tree.clone(gameObjects["Player"][1])]
 		var list = [cloned_player, gameObjects["Enemies"][enemy]]
-		spellCasts.push_back(list)
 		var pos = gameObjects["Enemies"][enemy][0].get_pos()
 		if cloned_player[1] != null:
-			var fire = cloned_player[1].getNode("water2")
+			spellCasts.push_back(list)
 			cloned_player[1].cast(pos.x, pos.y)
 			first_run = true
+
+func stop():
+	for spell in spellCasts:
+		spell[0][1].stop()
 
 func createEnemy(var x, var y, var hp, var mp, var texture):
 	if !gameObjects.has("Enemies"):
@@ -144,10 +153,8 @@ func createEnemy(var x, var y, var hp, var mp, var texture):
 func createPlayer(var sprite, var hp, var mp):
 	var player = createPlayer.new(sprite, hp, mp)
 	if !gameObjects.has("Player"):
-		print("working")
 		gameObjects["Player"] = [player, null]
 	else:
-		print("resetting")
 		gameObjects["Player"][0] = player
 	return player
 
@@ -157,4 +164,3 @@ func _getInstance(var object, var parameter = null, var giveParams = false):
 	else:
 		object = object.new()
 	return object
-	

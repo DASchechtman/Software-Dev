@@ -15,7 +15,10 @@ class FileGet extends Reference:
 		
 	func write(var string):
 		file.open(path, File.WRITE)
-		file.store_string(string)
+		if typeof(string) == typeof("string"):
+			file.store_string(string)
+		else:
+			file.store_var(string)
 		file.close()
 	
 	func read():

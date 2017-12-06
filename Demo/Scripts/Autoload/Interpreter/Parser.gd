@@ -12,6 +12,7 @@ const HEX = preload("Hex/Hex.gd")
 var listToks
 var spellName
 const referance = preload("res://Scripts/ReferanceVars/RefVar.gd")
+const compile_if = preload("CompiledIf.gd")
 
 
 func _init():
@@ -37,10 +38,15 @@ func compile(var file):
 			var tokenName = _findName(line, ref)
 			if buffer == 'Element':
 				tokenName = _fixElementInput(tokenName)
-			var keyword = DataShare.get("Keyword")
+			if tokenName.to_lower().capitalize() == 'If':
+				tokenName = compile_if.new(line)
+			var keywords = DataShare.get("Keywords")
 			
-			if keyword.has(tokenName) and buffer != "Cast":
-				tokList.push_back(TOKEN.new(tokenName, keyword[tokenName]))
+			if keywords.has(tokenName) and buffer != "Cast":
+				tokList.push_back(TOKEN.new(tokenName, keywords[tokenName]))
+			elif typeof(tokenName) == typeof(compile_if.new()):
+				tokList.push_back(TOKEN.new(tokenName.getName(), tokenName))
+				break
 			elif _checkIfNumber(tokenName):
 				var num = ""
 				for char in tokenName:
@@ -69,9 +75,7 @@ func _findName(var line, var ref):
 		if ref.get() == line.length():
 			break
 		char = line[ref.get()]
-	
 	ref.set(ref.get() + 1)
-		
 	return getName
 
 func convertToNum(var token_name, var string_num):
@@ -115,11 +119,10 @@ func _checkIfNumber(var line):
 			elif line[0] == '.' and line[1] >= '0' and line[1] <= '9':
 				is_num = true
 	return is_num
-	
+
 func _convertToHex(var tokList):
 	var hex = HEX.new(spellName)
 	for tokens in tokList:
-		var isList = false
 		for token in tokens:
 			#set(var key) has the ability to save a key
 			#passed in. The end result is that the first time
@@ -128,7 +131,6 @@ func _convertToHex(var tokList):
 			#is called it uses that stored key to get access
 			#to the correct element in hex's internal dictionary
 			#and stores the key passed in to that dictionary
-			var name = token.getName()
-			var type = token.getVal()
+			
 			hex.set(token.getName(), token.getVal())
 	return hex

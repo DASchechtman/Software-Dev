@@ -2,7 +2,7 @@ extends Node
 
 
 class state:
-	enum {getPlayer = 0, getAll = 1, getOne = 2}
+	enum x{getPlayer = 0, getAll = 1, getOne = 2}
 	var file
 	var load_instructions
 	var write

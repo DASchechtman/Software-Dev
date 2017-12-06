@@ -12,12 +12,16 @@ func _on_Ok_pressed():
 	# gets what the user just typed in
 	var fileName = get_text().split('.')[0]
 	
-	if fileName.empty() or _has_forbidden_characters(fileName):
+	var has_file_with_keyword_name = DataShare.get("CastList").has(fileName+"_")
+	var has_file = DataShare.get("CastList").has(fileName)
+	var illegal_chars_in_file_name = _has_forbidden_characters(fileName)
+	
+	if fileName.empty() or illegal_chars_in_file_name or has_file_with_keyword_name or has_file:
 		return null
 	
 	# makes sure that the program will be able to distingush
 	# what the user typed in from key words of ManaScript
-	if DataShare.get("Keyword").has(fileName):
+	if DataShare.get("Keywords").has(fileName):
 		fileName += '_'
 		
 	var hex_file = FileLoader.new("user://"+fileName+'.hex', fileName)
@@ -33,7 +37,9 @@ func _on_Ok_pressed():
 		else:
 			hex_file.append(command)
 	DataShare.add("FileList", [])
+	DataShare.add("CastList", [])
 	DataShare.get("FileList").push_back(hex_file)
+	DataShare.get("CastList")[hex_file.getName()] = hex_file
 	saveFile.append("user://"+fileName+'.hex')
 	
 	set_text("")

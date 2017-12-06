@@ -14,7 +14,7 @@ var visable_spell
 var weak_spell_ref
 var cast = false
 
-func _init(var refered_hex, var root, var count):
+func _init(var refered_hex, var root, var count = null):
 	cast_textures = {
 		Fire = load("res://Art/Fire.tex"),
 		Water = load("res://Art/Water.tex"),
@@ -29,22 +29,26 @@ func getHex():
 	return ref_hex
 
 func cast(var x, var y):
-	ref.set(ref.get()+1)
-	var scene = scene_root.get_child(scene_root.get_child_count()-1)
-	visable_spell = visable_spell_loader.new(x, y, cast_textures[ref_hex.Element()], ref_hex.Time(), scene, self)
-	weak_spell_ref = weakref(visable_spell)
-	visable_spell.start()
+	if ref_hex.Element() != "None" and not cast:
+		if ref != null:
+			ref.set(ref.get()+1)
+		var scene = scene_root.get_child(scene_root.get_child_count()-1)
+		visable_spell = visable_spell_loader.new(x, y, cast_textures[ref_hex.Element()], ref_hex.Time(), scene, self)
+		weak_spell_ref = weakref(visable_spell)
+		visable_spell.start()
+		cast = true
 
 func updatePos(var x, var y):
-	if weak_spell_ref.get_ref() != null:
+	if weak_spell_ref != null and weak_spell_ref.get_ref() != null:
 		visable_spell.updatePos(x, y)
 
 func destroy():
-	if weak_spell_ref.get_ref() != null:
-		ref.set(ref.get()-1)
+	if weak_spell_ref != null and weak_spell_ref.get_ref() != null:
+		if ref != null:
+			ref.set(ref.get()-1)
 		visable_spell.stop()
 		visable_spell = null
 	
 func stop():
-	if weak_spell_ref.get_ref() != null:
-		destroy()
+	destroy()
+	cast = false

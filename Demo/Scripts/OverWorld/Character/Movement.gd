@@ -18,7 +18,6 @@ var state
 var breakPoint = false
 
 func _ready():
-	
 	# will store a list of enemies that will be accessable
 	# throughout the entire scene
 	DataShare.set("EnemiesList", [])
@@ -108,3 +107,6 @@ func _checkMove(sprite, x, y, delta):
 	if Input.is_action_pressed("ui_right"):
 		y = 25
 		_move(sprite, y, 0, delta)
+
+func _on_stop_pressed():
+	Interpreter.stop()

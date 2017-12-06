@@ -38,7 +38,7 @@ func isMoving():
 	var hasMoved = false
 	if weakRefSprite.get_ref() != null:
 		hasMoved = ((moved.x != sprite.get_pos().x) or (moved.y != sprite.get_pos().y))
-		if !hasMoved:
+		if hasMoved:
 			moved = sprite.get_pos()
 	return hasMoved
 
